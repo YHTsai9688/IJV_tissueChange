@@ -48,11 +48,23 @@ def plot_IJV_spectrum(ijv_gen, blc):
 def plot_used_spectrum(tissue, spec, mua_or_mus):
     spec_numpy = pd.DataFrame(spec).to_numpy()
     plt.figure(figsize=(12,8))
-    for idx, i in enumerate(range(spec_numpy.shape[0])):
-        if (idx%2) == 0:
-            plt.plot(used_wl,spec_numpy[i], 'b')
-        elif (idx%2) == 1:
-            plt.plot(used_wl,spec_numpy[i], 'r')
+    train_idx = [i for i in range(0,18,2)]+[19]
+    test_idx = [i for i in range(1,19,2)]+[18]
+    for count, i in enumerate(train_idx):
+        if count == 0:
+            plt.plot(used_wl, spec_numpy[i], 'b', label='training')
+        else:
+            plt.plot(used_wl, spec_numpy[i], 'b')
+    for count, i in enumerate(test_idx):
+        if count == 0:
+            plt.plot(used_wl, spec_numpy[i], 'r', label='testing')
+        else:
+            plt.plot(used_wl, spec_numpy[i], 'r')  
+    # for idx, i in enumerate(range(spec_numpy.shape[0])):
+    #     if (idx%2) == 0:
+    #         plt.plot(used_wl,spec_numpy[i], 'b')
+    #     elif (idx%2) == 1:
+    #         plt.plot(used_wl,spec_numpy[i], 'r')
     plt.xlabel('wavelength(nm)')
     if mua_or_mus == "mus":
         plt.ylabel("$\mu_s$($mm^{-1}$)")
@@ -75,7 +87,12 @@ def random_gen_mus(num, used_wl, tissue, a_max, a_min, b_max, b_min):
         spec[f'{wl}nm'] = []
     for i in range(num):
         for wl in used_wl:
-            spec[f'{wl}nm'].append(calculateMus(wl, tissue, a_list[i], b_list[i]))
+            if i == 0:
+                spec[f'{wl}nm'].append(calculateMus(wl, tissue, min(a_list), min(b_list)))
+            elif i == (num-1):
+                spec[f'{wl}nm'].append(calculateMus(wl, tissue, max(a_list), max(b_list)))
+            else:
+                spec[f'{wl}nm'].append(calculateMus(wl, tissue, a_list[i], b_list[i]))
     
     return spec
 
@@ -135,33 +152,33 @@ if __name__ == "__main__":
         plot_used_spectrum(t, mus_spec, "mus")
     
     # mua_gen --> for skin fat cca muscle
-    tissue = ['skin', 'fat', 'cca', 'muscle']
-    mua_gen = {}
-    for t in tissue:
-        mua_spec = random_gen_mua(num, used_wl, t, mua_bound)
-        mua_gen[t] = mua_spec
-        plot_used_spectrum(t, mua_spec, "mua")
+    # tissue = ['skin', 'fat', 'cca', 'muscle']
+    # mua_gen = {}
+    # for t in tissue:
+    #     mua_spec = random_gen_mua(num, used_wl, t, mua_bound)
+    #     mua_gen[t] = mua_spec
+    #     plot_used_spectrum(t, mua_spec, "mua")
 
-    # mua_gen --> for ijv     
-    ijv_gen = {}
-    blc = np.linspace(bloodConc[0],bloodConc[1],num, dtype=int).tolist()
-    random.shuffle(blc)
-    for b in blc:
-        ijv_save = np.empty((len(SO2), len(used_wl)+1)) # record SO2 + wavelength
-        for idx, s in enumerate(SO2):
-            ijv_spec = random_gen_ijv_mua(used_wl, mua_bound, b, bloodConc, s)
-            ijv_gen[f"ijv_bloodConc_{b}_bloodSO2_{s}"] = ijv_spec
-            ijv_save[idx] = np.array([s]+ijv_spec)
-        columns = ['SO2'] + [f'{wl}_nm' for wl in used_wl]
-        ijv_save = pd.DataFrame(ijv_save, columns=columns)
-        ijv_save.to_csv(os.path.join("OPs_used", f"ijv_mua_bloodConc_{b}.csv"), index=False)
-    plot_IJV_spectrum(ijv_gen, blc)
+    # # mua_gen --> for ijv     
+    # ijv_gen = {}
+    # blc = np.linspace(bloodConc[0],bloodConc[1],num, dtype=int).tolist()
+    # random.shuffle(blc)
+    # for b in blc:
+    #     ijv_save = np.empty((len(SO2), len(used_wl)+1)) # record SO2 + wavelength
+    #     for idx, s in enumerate(SO2):
+    #         ijv_spec = random_gen_ijv_mua(used_wl, mua_bound, b, bloodConc, s)
+    #         ijv_gen[f"ijv_bloodConc_{b}_bloodSO2_{s}"] = ijv_spec
+    #         ijv_save[idx] = np.array([s]+ijv_spec)
+    #     columns = ['SO2'] + [f'{wl}_nm' for wl in used_wl]
+    #     ijv_save = pd.DataFrame(ijv_save, columns=columns)
+    #     ijv_save.to_csv(os.path.join("OPs_used", f"ijv_mua_bloodConc_{b}.csv"), index=False)
+    # plot_IJV_spectrum(ijv_gen, blc)
 
-    mua_gen.update(ijv_gen)
+    # mua_gen.update(ijv_gen)
     with open(os.path.join("OPs_used","mus_spectrum.json"), "w") as f:
         json.dump(mus_gen, f, indent=4)
-    with open(os.path.join("OPs_used","mua_spectrum.json"), "w") as f:
-        json.dump(mua_gen, f, indent=4)
+    # with open(os.path.join("OPs_used","mua_spectrum.json"), "w") as f:
+    #     json.dump(mua_gen, f, indent=4)
     used_bloodConc = {'bloodConc' : blc}
     with open(os.path.join("OPs_used", "bloodConc.json"), "w") as f:
         json.dump(used_bloodConc, f, indent=4)
