@@ -41,8 +41,10 @@ def Get_OPs_set(bound: dict, split_num: list, OP_type: str, savepath: str):
         else:
             OPs_table_train[tissue] = list(np.linspace(bound[tissue][0], bound[tissue][1], 2*split_num[i]))[::2]
             OPs_table_test[tissue] = list(np.linspace(bound[tissue][0], bound[tissue][1], 2*split_num[i]))[1::2]
+
         train_conditions *= len(OPs_table_train[tissue])
         test_conditions *= len(OPs_table_test[tissue])
+
 
     # get train set
     OPs_set_train = np.zeros((train_conditions,len(TISSUES)))
@@ -96,7 +98,7 @@ def Get_OPs_set(bound: dict, split_num: list, OP_type: str, savepath: str):
     if OP_type == 'mus':
         np.random.shuffle(OPs_set_test)
         OPs_set_test = OPs_set_test[:int(OPs_set_test.shape[0]*0.1)]
-        
+
     np.save(os.path.join(savepath, f'{OP_type}_set_test.npy'), OPs_set_test)
     OPs_set_test = pd.DataFrame(OPs_set_test, columns=TISSUES)
     OPs_set_test.to_csv(os.path.join(savepath, f'{OP_type}_set_test.csv'), index=False)
@@ -123,7 +125,7 @@ if __name__ == "__main__":
     with open(os.path.join("OPs_used", "mus_bound.json"), "r") as f:
         mus_bound = json.load(f)
     mus_tissues = ['skin', 'fat', 'muscle', 'ijv', 'cca']
-    split_num = [args.num_skin_mus, args.num_fat_mus, args.num_muscle_mus, args.num_blood_mus, args.num_blood_mus]
+    split_num = [5,5,5,5,5]
     savepath = 'OPs_used'
     mus_set = Get_OPs_set(bound = mus_bound, 
                           split_num = split_num, 
@@ -134,7 +136,7 @@ if __name__ == "__main__":
     with open(os.path.join("OPs_used", "mua_bound.json"), "r") as f:
         mua_bound = json.load(f)
     mua_tissues = ['skin', 'fat', 'muscle', 'ijv', 'cca']
-    split_num = [args.num_skin_mua, args.num_fat_mua, args.num_muscle_mua, args.num_ijv_mua, args.num_cca_mua]
+    split_num = [5,5,5,5,5]
     savepath = 'OPs_used'
     mua_set = Get_OPs_set(bound = mua_bound, 
                           split_num = split_num, 

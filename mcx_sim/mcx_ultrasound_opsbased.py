@@ -156,7 +156,7 @@ class MCX:
         command += "--input {} ".format(geometryFile)
         command += "--root {} ".format(root)
         command += "--gpu 1 "  # use first gpu
-        # command += "--workload 55,45"
+        # command += "--workload 60,40 "  # 上一行的1和40後面都要空格
         command += "--autopilot 1 "
         command += "--photon {} ".format(self.config["PhotonNum"])
         command += "--repeat 1 "
@@ -302,7 +302,7 @@ class MCX:
         for fiber in self.modelParameters["HardwareParam"]["Detector"]["Fiber"]:
             # right - bottom
             self.mcxInput["Optode"]["Detector"].append({"R": self.convertUnit(fiber["Radius"]),
-                                                        "Pos": [modelX/2 + self.convertUnit(fiber["SDS"]),
+                                                        "Pos": [modelX/2 + self.convertUnit(fiber["SDS"]),  # x y z detector位置
                                                                 modelY/2 - 2 *
                                                                 self.convertUnit(
                                                                     fiber["Radius"]),
